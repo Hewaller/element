@@ -20,23 +20,27 @@
       <div class="el-input-group__prepend" v-if="$slots.prepend">
         <slot name="prepend"></slot>
       </div>
-      <input
+      <!-- 
+        * 非直接输入的时候触发 compositionstart, 常用语中文的输入，不触发 input 事件中的逻辑, 中文输入时防抖
+        *  compositionend 事件触发时，调用 input 事件处理逻辑。
+       -->
+      <inptu
         :tabindex="tabindex"
-        v-if="type !== 'textarea'"
         class="el-input__inner"
-        v-bind="$attrs"
+        v-if="type !== 'textarea'"
+        v-bind="$attrs"  
         :type="showPassword ? (passwordVisible ? 'text': 'password') : type"
         :disabled="inputDisabled"
         :readonly="readonly"
         :autocomplete="autoComplete || autocomplete"
         ref="input"
-        @compositionstart="handleCompositionStart"
+        @compositionstart="handleCompositionStart"   
         @compositionend="handleCompositionEnd"
         @input="handleInput"
         @focus="handleFocus"
         @blur="handleBlur"
         @change="handleChange"
-        :aria-label="label"
+        :aria-label="label"  输入框关联的label文字
       >
       <!-- 前置内容 -->
       <span class="el-input__prefix" v-if="$slots.prefix || prefixIcon">
@@ -46,32 +50,38 @@
            :class="prefixIcon">
         </i>
       </span>
-      <!-- 后置内容 -->
+      <!-- 后置内容   一部分作用是使用定义好的图标   --> 
       <span
         class="el-input__suffix"
         v-if="getSuffixVisible()">
+        <!-- 输入框尾部图标 -->
         <span class="el-input__suffix-inner">
           <template v-if="!showClear || !showPwdVisible || !isWordLimitVisible">
             <slot name="suffix"></slot>
+            <!-- 输入框尾部图标 -->
             <i class="el-input__icon"
               v-if="suffixIcon"
               :class="suffixIcon">
             </i>
           </template>
+          <!-- 清除图标 -->
           <i v-if="showClear"
             class="el-input__icon el-icon-circle-close el-input__clear"
             @click="clear"
           ></i>
+          <!-- 显示密码 -->
           <i v-if="showPwdVisible"
             class="el-input__icon el-icon-view el-input__clear"
             @click="handlePasswordVisible"
           ></i>
+          <!-- 显示文字长度和限制 -->
           <span v-if="isWordLimitVisible" class="el-input__count">
             <span class="el-input__count-inner">
               {{ textLength }}/{{ upperLimit }}
             </span>
           </span>
         </span>
+        <!-- 表单验证的提醒图标 -->
         <i class="el-input__icon"
           v-if="validateState"
           :class="['el-input__validateIcon', validateIcon]">
@@ -193,12 +203,15 @@
         return (this.elFormItem || {}).elFormItemSize;
       },
       validateState() {
+        // form 验证规则
         return this.elFormItem ? this.elFormItem.validateState : '';
       },
       needStatusIcon() {
+        // 输入框中显示校验结果反馈图标
         return this.elForm ? this.elForm.statusIcon : false;
       },
       validateIcon() {
+        // 验证提醒图标
         return {
           validating: 'el-icon-loading',
           success: 'el-icon-circle-check',
@@ -215,24 +228,25 @@
         return this.disabled || (this.elForm || {}).disabled;
       },
       nativeInputValue() {
+        // 初始化默认值 IE下的兼容问题
         return this.value === null || this.value === undefined ? '' : String(this.value);
       },
-      showClear() {
-        return this.clearable &&
-          !this.inputDisabled &&
+      showClear() {  // 显示清楚的小按钮
+        return this.clearable &&  // 是否清空
+          !this.inputDisabled && 
           !this.readonly &&
-          this.nativeInputValue &&
-          (this.focused || this.hovering);
+          this.nativeInputValue && // 输入框存在值
+          (this.focused || this.hovering);  // 聚焦或者hover  
       },
-      showPwdVisible() {
+      showPwdVisible() { // 现实切换密码 按钮
         return this.showPassword &&
           !this.inputDisabled &&
           !this.readonly &&
           (!!this.nativeInputValue || this.focused);
       },
-      isWordLimitVisible() {
+      isWordLimitVisible() {  // 显示输入字数统计
         return this.showWordLimit &&
-          this.$attrs.maxlength &&
+          this.$attrs.maxlength &&  // 父作用内的属性： 没有被props所一如的属性
           (this.type === 'text' || this.type === 'textarea') &&
           !this.inputDisabled &&
           !this.readonly &&
@@ -248,7 +262,7 @@
 
         return (this.value || '').length;
       },
-      inputExceed() {
+      inputExceed() {  // 初始长度超过限制样式提醒
         // show exceed style if length of initial value greater then maxlength
         return this.isWordLimitVisible &&
           (this.textLength > this.upperLimit);
@@ -302,6 +316,7 @@
         this.focused = false;
         this.$emit('blur', event);
         if (this.validateEvent) {
+          // 失交后验证
           this.dispatch('ElFormItem', 'el.form.blur', [this.value]);
         }
       },
@@ -312,7 +327,7 @@
         if (this.$isServer) return;
         const { autosize, type } = this;
         if (type !== 'textarea') return;
-        if (!autosize) {
+        if (!autsize) {
           this.textareaCalcStyle = {
             minHeight: calcTextareaHeight(this.$refs.textarea).minHeight
           };
@@ -324,13 +339,13 @@
         this.textareaCalcStyle = calcTextareaHeight(this.$refs.textarea, minRows, maxRows);
       },
       setNativeInputValue() {
-        const input = this.getInput();
+        const input = this.getInput();  // 获取DOM元素
         if (!input) return;
         if (input.value === this.nativeInputValue) return;
         input.value = this.nativeInputValue;
       },
       handleFocus(event) {
-        this.focused = true;
+        this.focused = true;  // 聚焦
         this.$emit('focus', event);
       },
       handleCompositionStart() {
@@ -343,7 +358,7 @@
       handleInput(event) {
         // should not emit input during composition
         // see: https://github.com/ElemeFE/element/issues/10516
-        if (this.isComposing) return;
+        if (this.isComposing) return;  // 中文输入时防抖
 
         // hack for https://github.com/ElemeFE/element/issues/8548
         // should remove the following line when we don't support IE
@@ -397,13 +412,13 @@
       getInput() {
         return this.$refs.input || this.$refs.textarea;
       },
-      getSuffixVisible() {
+      getSuffixVisible() {  //显示后置的元素（图标）
         return this.$slots.suffix ||
           this.suffixIcon ||
           this.showClear ||
           this.showPassword ||
           this.isWordLimitVisible ||
-          (this.validateState && this.needStatusIcon);
+          (this.validateState && this.needStatusIcon); //表单验证 && 输入框中显示校验结果反馈图标
       }
     },
 
