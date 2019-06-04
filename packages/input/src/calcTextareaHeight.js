@@ -33,19 +33,17 @@ function calculateNodeStyling(targetElement) {
 
   const boxSizing = style.getPropertyValue('box-sizing');
 
-  const paddingSize = (
+  const paddingSize =
     parseFloat(style.getPropertyValue('padding-bottom')) +
-    parseFloat(style.getPropertyValue('padding-top'))
-  );
+    parseFloat(style.getPropertyValue('padding-top'));
 
-  const borderSize = (
+  const borderSize =
     parseFloat(style.getPropertyValue('border-bottom-width')) +
-    parseFloat(style.getPropertyValue('border-top-width'))
-  );
+    parseFloat(style.getPropertyValue('border-top-width'));
 
-  const contextStyle = CONTEXT_STYLE
-    .map(name => `${name}:${style.getPropertyValue(name)}`)
-    .join(';');
+  const contextStyle = CONTEXT_STYLE.map(
+    name => `${name}:${style.getPropertyValue(name)}`
+  ).join(';');
 
   return { contextStyle, paddingSize, borderSize, boxSizing };
 }
@@ -70,7 +68,7 @@ export default function calcTextareaHeight(
   hiddenTextarea.setAttribute('style', `${contextStyle};${HIDDEN_STYLE}`);
   hiddenTextarea.value = targetElement.value || targetElement.placeholder || '';
 
-  let height = hiddenTextarea.scrollHeight;
+  let height = hiddenTextarea.scrollHeight; // 元素内容高度
   const result = {};
 
   if (boxSizing === 'border-box') {
@@ -83,12 +81,12 @@ export default function calcTextareaHeight(
   let singleRowHeight = hiddenTextarea.scrollHeight - paddingSize;
 
   if (minRows !== null) {
-    let minHeight = singleRowHeight * minRows;
+    let minHeight = singleRowHeight * minRows; // 基础高度乘行
     if (boxSizing === 'border-box') {
       minHeight = minHeight + paddingSize + borderSize;
     }
-    height = Math.max(minHeight, height);
-    result.minHeight = `${ minHeight }px`;
+    height = Math.max(minHeight, height); // 取最小高度
+    result.minHeight = `${minHeight}px`;
   }
   if (maxRows !== null) {
     let maxHeight = singleRowHeight * maxRows;
@@ -97,8 +95,9 @@ export default function calcTextareaHeight(
     }
     height = Math.min(maxHeight, height);
   }
-  result.height = `${ height }px`;
-  hiddenTextarea.parentNode && hiddenTextarea.parentNode.removeChild(hiddenTextarea);
+  result.height = `${height}px`;
+  hiddenTextarea.parentNode &&
+    hiddenTextarea.parentNode.removeChild(hiddenTextarea);
   hiddenTextarea = null;
   return result;
-};
+}

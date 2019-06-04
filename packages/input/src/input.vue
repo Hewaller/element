@@ -42,7 +42,7 @@
         @change="handleChange"
         :aria-label="label"  输入框关联的label文字
       >
-      <!-- 前置内容 -->
+      <!-- 前置内容和图标-->
       <span class="el-input__prefix" v-if="$slots.prefix || prefixIcon">
         <slot name="prefix"></slot>
         <i class="el-input__icon"
@@ -127,7 +127,7 @@
 
     mixins: [emitter, Migrating],
 
-    inheritAttrs: false,
+    inheritAttrs: false,  // 属性不放置在根元素上
 
     inject: {
       elForm: {
@@ -167,7 +167,7 @@
         type: String,
         default: 'off'
       },
-      /** @Deprecated in next major version */
+      /** @Deprecated in  */
       autoComplete: {
         type: String,
         validator(val) {
@@ -176,7 +176,7 @@
           return true;
         }
       },
-      validateEvent: {
+      validateEvent: {  // 输入时是否触发表单验证
         type: Boolean,
         default: true
       },
@@ -218,7 +218,8 @@
           error: 'el-icon-circle-close'
         }[this.validateState];
       },
-      textareaStyle() {
+      textareaStyle() {  // textarea 样式
+      // resize 是否能够被缩放
         return merge({}, this.textareaCalcStyle, { resize: this.resize });
       },
       inputSize() {
@@ -273,6 +274,8 @@
       value(val) {
         this.$nextTick(this.resizeTextarea);
         if (this.validateEvent) {
+          // 让form组件收集需要验证的form-item实例，有验证规则的el.form.blur ，el.form.change 事件监听起来，等待触发验证
+          // // form表单发布el.form.change事件
           this.dispatch('ElFormItem', 'el.form.change', [val]);
         }
       },
@@ -321,18 +324,21 @@
         }
       },
       select() {
+        //  ????
         this.getInput().select();
       },
       resizeTextarea() {
-        if (this.$isServer) return;
+        // 重置 textarea 的样式
+        if (this.$isServer) return;  // 是否在服务端运行
         const { autosize, type } = this;
         if (type !== 'textarea') return;
         if (!autsize) {
           this.textareaCalcStyle = {
-            minHeight: calcTextareaHeight(this.$refs.textarea).minHeight
+            minHeight: calcTextareaHeight(this.$refs.textarea).minHeight  // 计算输入域的最小高度
           };
           return;
         }
+        // 自动适应高度， 指定最小宽高
         const minRows = autosize.minRows;
         const maxRows = autosize.maxRows;
 
@@ -374,6 +380,7 @@
         this.$emit('change', event.target.value);
       },
       calcIconOffset(place) {
+        // 前置和后置元素的位置
         let elList = [].slice.call(this.$el.querySelectorAll(`.el-input__${place}`) || []);
         if (!elList.length) return;
         let el = null;
