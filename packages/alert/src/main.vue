@@ -37,6 +37,7 @@
         type: String,
         default: ''
       },
+      // success/warning/info/error
       type: {
         type: String,
         default: 'info'
@@ -54,6 +55,7 @@
       effect: {
         type: String,
         default: 'light',
+        // 对传入的值做验证，传入的值必须匹配字符串的一个，验证失败开发环境会报警告
         validator: function(value) {
           return ['light', 'dark'].indexOf(value) !== -1;
         }
@@ -81,11 +83,11 @@
       iconClass() {
         return TYPE_CLASSES_MAP[this.type] || 'el-icon-info';
       },
-
+      // 有描述就是大的icon
       isBigIcon() {
         return this.description || this.$slots.default ? 'is-big' : '';
       },
-
+      // 有描述就的话标题加粗
       isBoldTitle() {
         return this.description || this.$slots.default ? 'is-bold' : '';
       }
